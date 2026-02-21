@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_op_student_list" model="ir.ui.view">
+        <field name="name">op.student.list</field>
+        <field name="model">student.registration</field>
+        <field name="priority" eval="8"/>
+        <field name="arch" type="xml">
+            <list string="Registration">
+                <field name="title"/>
+                <field name="first_name"/>
+                <field name="last_name"/>
+                <field name="gender"/>
+                <field name="birth_date"/>
+                <field name="email"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_op_student_form" model="ir.ui.view">
+        <field name="name">op.student.form</field>
+        <field name="model">student.registration</field>
+        <field name="priority" eval="8"/>
+        <field name="arch" type="xml">
+            <form string="Registration">
+                <header>
+                    <button 
+                        string="Submit" 
+                        invisible="state != 'draft'"
+                        class="oe_highlight" 
+                        type="object"
+                        name="submit_form"/>
+                    <button 
+                        string="Cancel" 
+                        type="object"
+                        name="confirm_cancel" 
+                        class="btn-secondary"/>
+                        <!-- <field name="state" widget="statusbar"
+                               statusbar_visible="draft,submit"/> -->
+                </header>
+                <sheet>
+                    <notebook>
+                        <page name="personal_details" string="Personal Details"> 
+                            <group col="2">
+                                <group>
+                                    <field name="title"/>
+                                    <field name="first_name" placeholder="Enter first name"/>
+                                    <field name="last_name" placeholder="Enter last name"/>
+                                        <field name="gender" placeholder="Select gender"/>
+                                    <field name="birth_province" placeholder="Select birth province"/>
+                                    <field name="birth_date" placeholder="Date of birth"/>
+                                </group>
+                                <group>
+                                     <field name="marital_status" placeholder="Select marital status"/>
+                                    <field name="home_province" placeholder="Select home province"/>
+                                    <field name="email" widget="email" placeholder="Enter an valid email address"/>
+                                    <field name="phone" widget="phone" placeholder="Enter landline number"/>
+                                    <field name="mobile" widget="phone" placeholder="Enter mobile number"/>
+                                </group>
+                            </group>                       
+                        </page>
+                        <page name="residential_details" string="Residential Details">
+                            <group>
+                                <field name="street" placeholder="Enter the name of Street/ Village"/>
+                                <field name="city" placeholder="Enter the name of City/Town/District"/>
+                                <field name="res_province" placeholder="Select Province"/>
+                                <field name="post_address" placeholder="Enter Post Address"/>
+                                <field name="country" placeholder="Select country"/>
+                            </group>
+                        </page>
+                        <page name="identification" string="Identification">
+                            <group>
+                                <group>
+                                    <field name="id_type" placeholder="Select ID Type"/>
+                                </group>
+                                <group>
+                                    <field name="id_copy" placeholder="Upload a copy of ID"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page name="academic_details" string="Academic Details"> 
+                            <group>
+                                <field name="school_name" placeholder="Enter name of last school/Institute"/>
+                                <field name="school_province" placeholder="Select province of last school/Institute"/>
+                                <field name="school_country" placeholder="Select country of last school/Institute"/>
+                            </group>
+                            <group>
+                                <field name="graduate_date" placeholder="Enter date of graduation"/>
+                                <field name="computer_skill" placeholder="Select level of computer literacy"/>
+                            </group>
+                        </page>
+                        <page name="course_details" string="Course Details">
+                           <group>
+                                <field name="study_field" placeholder="Select course"/> 
+                                <field name="reason" placeholder="Enter reason for choosing the WPU"/>
+                           </group>
+                        </page>
+                        <!-- <page name="certification_details" string="Copies of Certificates"></page> -->
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_student_registration" model="ir.actions.act_window">
+        <field name="name">Student Registration</field>
+        <field name="res_model">student.registration</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Root Menu -->
+    <menuitem id="menu_student_root" name="Student Management" sequence="50" groups="base.group_user"/>
+
+    <!-- Sub Menu -->
+    <menuitem id="menu_student_registration"
+              name="Registration"
+              parent="menu_student_root"
+              action="action_student_registration"
+              sequence="10"/>
+</odoo>
