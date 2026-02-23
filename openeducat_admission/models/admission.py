@@ -86,6 +86,49 @@ class OpAdmission(models.Model):
                 (record.first_name or '') + ' ' + (record.last_name or '')
             ).strip() or 'New Registration'
 
+    @api.constrains('birth_date')
+    def _check_birthdate(self):
+        for record in self:
+            if record.birth_date and record.birth_date > fields.Date.today():
+                raise ValidationError(_(
+                    "Birth Date can't be greater than current date!"))
+            elif record and record.birth_date:
+                today_date = fields.Date.today()
+                day = (today_date - record.birth_date).days
+                years = day // 365
+                if years < self.register_id.minimum_age_criteria:
+                    raise ValidationError(_(
+                        "Not Eligible for Admission minimum "
+                        "required age is :"
+                        " %s " % self.register_id.minimum_age_criteria))      
+    
+    def submit_form(self):
+        self.state = 'submit'
+    
+    def confirm_cancel(self):
+        self.state = 'cancel'
+
+    
+    @api.onchange('register_id')
+    def onchange_register(self):
+        if self.register_id:
+            if self.register_id.admission_base == 'course':
+                self.program_id = self.course_id.program_id.id
+                self.fees = self.register_id.product_id.lst_price
+                self.company_id = self.register_id.company_id.id
+            else:
+                self.program_id = self.register_id.program_id.id
+    
+    @api.model
+    def get_import_templates(self):
+        return [{
+            'label': _('Import Template for Admission'),
+            'template': '/openeducat_admission/static/xls/op_admission.xls'
+        }]
+
+    
+#--------------------DO NOT DELETE THE BELOW CODE, IT IS COMMENTED FOR FUTURE USE-----------------------------------------#
+
     # @api.depends('register_id')
     # def _compute_course_ids(self):
     #     for data in self:
@@ -136,16 +179,6 @@ class OpAdmission(models.Model):
     #         self.state_id = False
     #         self.partner_id = False
 
-    @api.onchange('register_id')
-    def onchange_register(self):
-        if self.register_id:
-            if self.register_id.admission_base == 'course':
-                self.program_id = self.course_id.program_id.id
-                self.fees = self.register_id.product_id.lst_price
-                self.company_id = self.register_id.company_id.id
-            else:
-                self.program_id = self.register_id.program_id.id
-
     # @api.onchange('course_id')
     # def onchange_course(self):
     #     self.batch_id = False
@@ -170,30 +203,12 @@ class OpAdmission(models.Model):
     #             raise ValidationError(_(
     #                 "Application Date should be between Start Date & End Date of Admission Register."))  # noqa
 
-    @api.constrains('birth_date')
-    def _check_birthdate(self):
-        for record in self:
-            if record.birth_date and record.birth_date > fields.Date.today():
-                raise ValidationError(_(
-                    "Birth Date can't be greater than current date!"))
-            elif record and record.birth_date:
-                today_date = fields.Date.today()
-                day = (today_date - record.birth_date).days
-                years = day // 365
-                if years < self.register_id.minimum_age_criteria:
-                    raise ValidationError(_(
-                        "Not Eligible for Admission minimum "
-                        "required age is :"
-                        " %s " % self.register_id.minimum_age_criteria))
 
     # @api.constrains('name')
     # def create_sequence(self):
     #     if not self.application_number:
     #         self.application_number = self.env['ir.sequence'].next_by_code(
     #             'op.admission') or '/'
-
-    def submit_form(self):
-        self.state = 'submit'
 
     # def admission_confirm(self):
     #     self.state = 'admission'
@@ -203,146 +218,146 @@ class OpAdmission(models.Model):
     #         record.state = 'confirm'
 
     # def get_student_vals(self):
-        enable_create_student_user = self.env['ir.config_parameter'].get_param(
-            'openeducat_admission.enable_create_student_user')
-        for student in self:
-            student_user = False
-            if enable_create_student_user:
-                student_user = self.env['res.users'].create({
-                    'name': student.name,
-                    'login': student.email,  # noqa
-                    'image_1920': self.image or False,
-                    'is_student': True,
-                    'company_id': self.company_id.id if self.company_id else False,
-                    'group_ids': [
-                        (6, 0,
-                         [self.env.ref('base.group_portal').id])]
-                })
-            details = {
-                'name': student.name,
-                'mobile': student.mobile,
-                'email': student.email,
-                'street': student.street,
-                'city': student.city,
-                'country': student.country,
-                'state': student.state  and student.state or False,
-                # 'image_1920': student.image,
-                # 'zip': student.zip,
-            }
-            if enable_create_student_user:
-                student_user.partner_id.write(details)
-            details.update({
-                'title': student.title and student.title.id or False,
-                'first_name': student.first_name,
-                'middle_name': student.middle_name,
-                'last_name': student.last_name,
-                'birth_date': student.birth_date,
-                'gender': student.gender if student.gender else False,
-                'image_1920': student.image or False,
-                'course_detail_ids': [[0, False, {
-                    'course_id':
-                        student.course_id and student.course_id.id or False,
-                    'batch_id':
-                        student.batch_id and student.batch_id.id or False,
-                    'academic_years_id':
-                        student.register_id.academic_years_id.id or False,
-                    'academic_term_id':
-                        student.register_id.academic_term_id.id or False,
-                    'fees_term_id': student.fees_term_id.id,
-                    'fees_start_date': student.fees_start_date,
-                    'product_id': student.register_id.product_id.id,
-                }]],
-                'user_id': student_user.id if student_user else False,
-                'company_id': self.company_id.id,
-                'partner_id':student_user.partner_id.id if student_user else False
-            })
-            return details
+    #     enable_create_student_user = self.env['ir.config_parameter'].get_param(
+    #         'openeducat_admission.enable_create_student_user')
+    #     for student in self:
+    #         student_user = False
+    #         if enable_create_student_user:
+    #             student_user = self.env['res.users'].create({
+    #                 'name': student.name,
+    #                 'login': student.email,  # noqa
+    #                 'image_1920': self.image or False,
+    #                 'is_student': True,
+    #                 'company_id': self.company_id.id if self.company_id else False,
+    #                 'group_ids': [
+    #                     (6, 0,
+    #                      [self.env.ref('base.group_portal').id])]
+    #             })
+    #         details = {
+    #             'name': student.name,
+    #             'mobile': student.mobile,
+    #             'email': student.email,
+    #             'street': student.street,
+    #             'city': student.city,
+    #             'country': student.country,
+    #             'state': student.state  and student.state or False,
+    #             # 'image_1920': student.image,
+    #             # 'zip': student.zip,
+    #         }
+    #         if enable_create_student_user:
+    #             student_user.partner_id.write(details)
+    #         details.update({
+    #             'title': student.title and student.title.id or False,
+    #             'first_name': student.first_name,
+    #             'middle_name': student.middle_name,
+    #             'last_name': student.last_name,
+    #             'birth_date': student.birth_date,
+    #             'gender': student.gender if student.gender else False,
+    #             'image_1920': student.image or False,
+    #             'course_detail_ids': [[0, False, {
+    #                 'course_id':
+    #                     student.course_id and student.course_id.id or False,
+    #                 'batch_id':
+    #                     student.batch_id and student.batch_id.id or False,
+    #                 'academic_years_id':
+    #                     student.register_id.academic_years_id.id or False,
+    #                 'academic_term_id':
+    #                     student.register_id.academic_term_id.id or False,
+    #                 'fees_term_id': student.fees_term_id.id,
+    #                 'fees_start_date': student.fees_start_date,
+    #                 'product_id': student.register_id.product_id.id,
+    #             }]],
+    #             'user_id': student_user.id if student_user else False,
+    #             'company_id': self.company_id.id,
+    #             'partner_id':student_user.partner_id.id if student_user else False
+    #         })
+    #         return details
 
     # def enroll_student(self):
-        for record in self:
-            if record.register_id.max_count:
-                total_admission = self.env['op.admission'].search_count(
-                    [('register_id', '=', record.register_id.id),
-                     ('state', '=', 'done')])
-                if not total_admission < record.register_id.max_count:
-                    msg = 'Max Admission In Admission Register :- (%s)' % (
-                        record.register_id.max_count)
-                    raise ValidationError(_(msg))
-            if not record.student_id:
-                vals = record.get_student_vals()
-                if vals:
-                    record.student_id = student_id = self.env[
-                        'op.student'].create(vals).id
-                    record.partner_id = record.student_id.partner_id.id \
-                        if record else False
+    #     for record in self:
+    #         if record.register_id.max_count:
+    #             total_admission = self.env['op.admission'].search_count(
+    #                 [('register_id', '=', record.register_id.id),
+    #                  ('state', '=', 'done')])
+    #             if not total_admission < record.register_id.max_count:
+    #                 msg = 'Max Admission In Admission Register :- (%s)' % (
+    #                     record.register_id.max_count)
+    #                 raise ValidationError(_(msg))
+    #         if not record.student_id:
+    #             vals = record.get_student_vals()
+    #             if vals:
+    #                 record.student_id = student_id = self.env[
+    #                     'op.student'].create(vals).id
+    #                 record.partner_id = record.student_id.partner_id.id \
+    #                     if record else False
 
-            else:
-                student_id = record.student_id.id
-                record.student_id.write({
-                    'course_detail_ids': [[0, False, {
-                        'course_id':
-                            record.course_id and record.course_id.id or False,
-                        'batch_id':
-                            record.batch_id and record.batch_id.id or False,
-                        'fees_term_id': record.fees_term_id.id,
-                        'fees_start_date': record.fees_start_date,
-                        'product_id': record.register_id.product_id.id,
-                    }]],
-                })
-            if record.fees_term_id.fees_terms in ['fixed_days', 'fixed_date']:
-                val = []
-                product_id = record.register_id.product_id.id
-                for line in record.fees_term_id.line_ids:
-                    no_days = line.due_days
-                    per_amount = line.value
-                    amount = (per_amount * record.fees) / 100
-                    dict_val = {
-                        'fees_line_id': line.id,
-                        'amount': amount,
-                        'fees_factor': per_amount,
-                        'product_id': product_id,
-                        'discount': record.discount or record.fees_term_id.discount,
-                        'state': 'draft',
-                        'course_id': record.course_id and record.course_id.id or False,
-                        'batch_id': record.batch_id and record.batch_id.id or False,
-                    }
-                    if line.due_date:
-                        date = line.due_date
-                        dict_val.update({
-                            'date': date
-                        })
-                    elif self.fees_start_date:
-                        date = self.fees_start_date + relativedelta(
-                            days=no_days)
-                        dict_val.update({
-                            'date': date,
-                        })
-                    else:
-                        date_now = (datetime.today() + relativedelta(
-                            days=no_days)).date()
-                        dict_val.update({
-                            'date': date_now,
-                        })
-                    val.append([0, False, dict_val])
-                record.student_id.write({
-                    'fees_detail_ids': val
-                })
-            record.write({
-                'nbr': 1,
-                'state': 'done',
-                'admission_date': fields.Date.today(),
-                'student_id': student_id,
-                'is_student': True,
-            })
-            reg_id = self.env['op.subject.registration'].create({
-                'student_id': student_id,
-                'batch_id': record.batch_id.id,
-                'course_id': record.course_id.id,
-                'min_unit_load': record.course_id.min_unit_load or 0.0,
-                'max_unit_load': record.course_id.max_unit_load or 0.0,
-                'state': 'draft',
-            })
-            reg_id.get_subjects()
+    #         else:
+    #             student_id = record.student_id.id
+    #             record.student_id.write({
+    #                 'course_detail_ids': [[0, False, {
+    #                     'course_id':
+    #                         record.course_id and record.course_id.id or False,
+    #                     'batch_id':
+    #                         record.batch_id and record.batch_id.id or False,
+    #                     'fees_term_id': record.fees_term_id.id,
+    #                     'fees_start_date': record.fees_start_date,
+    #                     'product_id': record.register_id.product_id.id,
+    #                 }]],
+    #             })
+    #         if record.fees_term_id.fees_terms in ['fixed_days', 'fixed_date']:
+    #             val = []
+    #             product_id = record.register_id.product_id.id
+    #             for line in record.fees_term_id.line_ids:
+    #                 no_days = line.due_days
+    #                 per_amount = line.value
+    #                 amount = (per_amount * record.fees) / 100
+    #                 dict_val = {
+    #                     'fees_line_id': line.id,
+    #                     'amount': amount,
+    #                     'fees_factor': per_amount,
+    #                     'product_id': product_id,
+    #                     'discount': record.discount or record.fees_term_id.discount,
+    #                     'state': 'draft',
+    #                     'course_id': record.course_id and record.course_id.id or False,
+    #                     'batch_id': record.batch_id and record.batch_id.id or False,
+    #                 }
+    #                 if line.due_date:
+    #                     date = line.due_date
+    #                     dict_val.update({
+    #                         'date': date
+    #                     })
+    #                 elif self.fees_start_date:
+    #                     date = self.fees_start_date + relativedelta(
+    #                         days=no_days)
+    #                     dict_val.update({
+    #                         'date': date,
+    #                     })
+    #                 else:
+    #                     date_now = (datetime.today() + relativedelta(
+    #                         days=no_days)).date()
+    #                     dict_val.update({
+    #                         'date': date_now,
+    #                     })
+    #                 val.append([0, False, dict_val])
+    #             record.student_id.write({
+    #                 'fees_detail_ids': val
+    #             })
+    #         record.write({
+    #             'nbr': 1,
+    #             'state': 'done',
+    #             'admission_date': fields.Date.today(),
+    #             'student_id': student_id,
+    #             'is_student': True,
+    #         })
+    #         reg_id = self.env['op.subject.registration'].create({
+    #             'student_id': student_id,
+    #             'batch_id': record.batch_id.id,
+    #             'course_id': record.course_id.id,
+    #             'min_unit_load': record.course_id.min_unit_load or 0.0,
+    #             'max_unit_load': record.course_id.max_unit_load or 0.0,
+    #             'state': 'draft',
+    #         })
+    #         reg_id.get_subjects()
 
     # def confirm_rejected(self):
     #     self.state = 'reject'
@@ -353,8 +368,8 @@ class OpAdmission(models.Model):
     # def confirm_to_draft(self):
     #     self.state = 'draft'
 
-    def confirm_cancel(self):
-        self.state = 'cancel'
+    # def cancel_admission(self):
+    #     self.state = 'cancel'
         # if self.is_student and self.student_id.fees_detail_ids:
         #     self.student_id.fees_detail_ids.state = 'cancel'
 
@@ -437,14 +452,6 @@ class OpAdmission(models.Model):
     #     self.partner_id = partner_id
     #     self.state = 'payment_process'
     #     return value
-
-    @api.model
-    def get_import_templates(self):
-        return [{
-            'label': _('Import Template for Admission'),
-            'template': '/openeducat_admission/static/xls/op_admission.xls'
-        }]
-
 
 # class OpStudentCourseInherit(models.Model):
 #     _inherit = "op.student.course"
