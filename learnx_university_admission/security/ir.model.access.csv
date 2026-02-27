@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_learnx_program_user,access_learnx_program_user,model_learnx_admission_program,base.group_user,1,0,0,0
+access_learnx_program_manager,access_learnx_program_manager,model_learnx_admission_program,base.group_user,1,1,1,1
+access_learnx_application_user,access_learnx_application_user,model_learnx_admission_application,base.group_user,1,1,1,0
+access_learnx_application_manager,access_learnx_application_manager,model_learnx_admission_application,base.group_user,1,1,1,1
+

@@ -1,0 +1,220 @@
+<odoo>
+    <!-- Programs -->
+    <record id="view_learnx_admission_program_tree" model="ir.ui.view">
+        <field name="name">learnx.admission.program.list</field>
+        <field name="model">learnx.admission.program</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="capacity == 0">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="capacity"/>
+                <field name="color" widget="color_picker"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_learnx_admission_program_form" model="ir.ui.view">
+        <field name="name">learnx.admission.program.form</field>
+        <field name="model">learnx.admission.program</field>
+        <field name="arch" type="xml">
+            <form string="Program">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                        </group>
+                        <group>
+                            <field name="capacity"/>
+                            <field name="color" widget="color_picker"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description">
+                            <field name="description"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_learnx_admission_programs" model="ir.actions.act_window">
+        <field name="name">Programs</field>
+        <field name="res_model">learnx.admission.program</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first program
+            </p>
+        </field>
+    </record>
+
+    <!-- Stages -->
+    <!-- Applications: Kanban, List, Form, Search -->
+    <record id="view_learnx_admission_application_kanban" model="ir.ui.view">
+        <field name="name">learnx.admission.application.kanban</field>
+        <field name="model">learnx.admission.application</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_learnx_admission">
+                <field name="admission_title"/>
+                <field name="academic_year"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="application_deadline"/>
+                <field name="available_program_ids"/>
+                <field name="max_intake_per_program"/>
+                <field name="application_fee"/>
+               <field name="state"
+                    widget="badge"
+                    decoration-info="state == 'draft'"
+                    decoration-primary="state == 'confirmed'"
+                    decoration-success="state == 'gathering'"
+                    decoration-warning="state == 'processing'"
+                    decoration-danger="state == 'cancelled'"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click o_kanban_card_learnx bg-100">
+                            <div class="o_kanban_learnx_header">
+                                <span class="o_kanban_learnx_applicant">
+                                    <t t-esc="record.admission_title.value"/>
+                                </span>
+                                <span t-if="record.academic_year.value" class="o_kanban_learnx_chip priority">
+                                    <t t-esc="record.academic_year.value"/>
+                                </span>
+                            </div>
+                            <div class="o_kanban_learnx_body">
+                                <div class="o_kanban_learnx_program">
+                                    <i class="fa fa-calendar"/>
+                                    <span>
+                                        <t t-esc="record.start_date.value"/> –
+                                        <t t-esc="record.end_date.value"/>
+                                    </span>
+                                </div>
+                                <div class="o_kanban_learnx_meta">
+                                    <span t-if="record.application_deadline.value" class="badge badge-primary">
+                                        Deadline:
+                                        <t t-esc="record.application_deadline.value"/>
+                                    </span>
+                                    <span t-if="record.state.value"
+                                        t-attf-class="badge badge-pill
+                                            #{record.state.raw_value == 'draft' and 'bg-info'}
+                                            #{record.state.raw_value == 'confirmed' and 'bg-primary'}
+                                            #{record.state.raw_value == 'gathering' and 'bg-success'}
+                                            #{record.state.raw_value == 'processing' and 'bg-warning'}
+                                            #{record.state.raw_value == 'cancelled' and 'bg-danger'}">
+                                        <t t-esc="record.state.value"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_learnx_admission_application_tree" model="ir.ui.view">
+        <field name="name">learnx.admission.application.list</field>
+        <field name="model">learnx.admission.application</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="admission_title"/>
+                <field name="academic_year"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="application_deadline"/>
+                <field name="state"
+                    widget="badge"
+                    decoration-info="state == 'draft'"
+                    decoration-primary="state == 'confirmed'"
+                    decoration-success="state == 'gathering'"
+                    decoration-warning="state == 'processing'"
+                    decoration-danger="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_learnx_admission_application_form" model="ir.ui.view">
+        <field name="name">learnx.admission.application.form</field>
+        <field name="model">learnx.admission.application</field>
+        <field name="arch" type="xml">
+            <form string="Admission" class="o_learnx_admission_form">
+                <header>
+                    <button name="action_confirm" type="object" string="Confirm"
+                            class="btn-primary"/>
+                    <button name="action_cancel" type="object" string="Cancel"
+                            class="btn-secondary"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="o_learnx_admission_banner">
+                        <div class="o_learnx_admission_banner_text">
+                            <div class="o_learnx_admission_banner_title">
+                                <field name="display_header_title" nolabel="1"/>
+                            </div>
+                            <div class="o_learnx_admission_banner_state">
+                               <field name="state"
+                                    nolabel="1"
+                                    decoration-info="state == 'draft'"
+                                    decoration-primary="state == 'confirmed'"
+                                    decoration-success="state == 'gathering'"
+                                    decoration-warning="state == 'processing'"
+                                    decoration-danger="state == 'cancelled'"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <notebook>
+                        <page string="Admission Info">
+                            <group>
+                                <field name="admission_title"/>
+                                <field name="academic_year"/>
+                            </group>
+                        </page>
+                        <page string="Schedule">
+                            <group>
+                                <field name="start_date"/>
+                                <field name="end_date"/>
+                                <field name="application_deadline"/>
+                            </group>
+                        </page>
+                        <page string="Capacity &amp; Fees">
+                            <group>
+                                <field name="available_program_ids" widget="many2many_tags"/>
+                                <field name="max_intake_per_program"/>
+                                <field name="application_fee"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_learnx_admission_application_search" model="ir.ui.view">
+        <field name="name">learnx.admission.application.search</field>
+        <field name="model">learnx.admission.application</field>
+        <field name="arch" type="xml">
+            <search string="Search Admissions">
+                <field name="admission_title"/>
+                <field name="academic_year"/>
+                <field name="state"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_learnx_admission_applications" model="ir.actions.act_window">
+        <field name="name">Admissions</field>
+        <field name="res_model">learnx.admission.application</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_learnx_admission_application_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first application
+            </p>
+        </field>
+    </record>
+</odoo>
