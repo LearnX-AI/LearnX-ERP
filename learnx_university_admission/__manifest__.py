@@ -18,14 +18,17 @@
     'auto_install': False,
     "depends": ["base", "mail", "web"],
     "data": [
+        "data/admission_sequence.xml",
         "security/admission_security.xml",
         "security/ir.model.access.csv",
+        "views/subject_view.xml",
         "views/admission_views.xml",
         "views/admission_menu.xml",
     ],
     "assets": {
         "web.assets_backend": [
             "learnx_university_admission/static/src/scss/admission.scss",
+            "learnx_university_admission/static/src/js/admission_steps.js",
         ],
     },
 }

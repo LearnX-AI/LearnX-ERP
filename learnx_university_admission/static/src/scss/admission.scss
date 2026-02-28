@@ -1,29 +1,32 @@
 /* ============================= */
-/* Kanban Card */
+/* Kanban Card Layout */
 /* ============================= */
 
-.o_kanban_learnx_admission .o_kanban_card_learnx {
+.o_kanban_admission .o_kanban_card {
   border-radius: 12px;
   padding: 10px 12px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   border: 1px solid rgba(120, 120, 180, 0.18);
   background: linear-gradient(135deg, #f9fbff, #f5f7ff);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.o_kanban_learnx_header {
+.o_kanban_header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
+  align-items: flex-start;
 }
 
-.o_kanban_learnx_applicant {
+.o_kanban_applicant {
   font-weight: 600;
   font-size: 14px;
   color: #28304b;
 }
 
-.o_kanban_learnx_chip.priority {
+/* Priority/Semester Chip */
+.o_kanban_chip.priority {
   padding: 2px 8px;
   border-radius: 999px;
   font-size: 11px;
@@ -31,107 +34,257 @@
   letter-spacing: 0.04em;
   background-color: rgba(255, 153, 102, 0.15);
   color: #c75b11;
+  white-space: nowrap;
 }
 
-.o_kanban_learnx_program {
+.o_kanban_program {
   font-size: 12px;
   color: #4c5b7a;
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin-bottom: 6px;
+  gap: 6px;
 }
 
-.o_kanban_learnx_meta {
+.o_kanban_meta {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  font-size: 11px;
+  margin-top: 4px;
+  align-items: flex-start;
 }
 
-/* LearnX Custom State Color System */
-/* Overrides Odoo Bootstrap Badges */
-/* ===================================== */
+/* ========================================= */
+/* GLOBAL STATE BADGE COLORS (NOT STATUSBAR) */
+/* ========================================= */
 
-/* Draft */
-.badge-info,
-.o_statusbar_status.bg-info.o_learnx_admission_form .o_learnx_admission_state_tag[data-value='draft']  {
-  background-color: rgba(251, 146, 60, 0.16) !important;
-  color: #9a3412 !important;
+/* Only badge widget for state field */
+.o_field_badge[name="state"],
+.badge.o_field_badge[data-value] {
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em;
+  padding: 4px 12px !important;
+  border-radius: 999px !important;
+  border: none !important;
 }
 
-/* Confirmed */
-.badge-primary,
-.o_statusbar_status.bg-primary.o_learnx_admission_form .o_learnx_admission_state_tag[data-value='confirmed'] {
-  background-color: rgba(59, 130, 246, 0.16) !important;
-  color: #1d4ed8 !important;
+/* =============================== */
+/* UNIQUE COLORS FOR EACH STATE   */
+/* =============================== */
+
+.o_field_badge[name="state"][data-value="draft"] {
+  background-color: #dbeafe !important;
+  color: #1e40af !important;
 }
 
-/* Gathering */
-.badge-success,
-.o_statusbar_status.bg-success.o_learnx_admission_form .o_learnx_admission_state_tag[data-value='gathering'] {
-  background-color: rgba(168, 85, 247, 0.16) !important;
-  color: #6b21a8 !important;
+.o_field_badge[name="state"][data-value="submitted"] {
+  background-color: #fef3c7 !important;
+  color: #b45309 !important;
 }
 
-/* Processing */
-.badge-warning,
-.o_statusbar_status.bg-warning.o_learnx_admission_form .o_learnx_admission_state_tag[data-value='processing'] {
-  background-color: rgba(34, 197, 94, 0.16) !important;
-  color: #166534 !important;
+.o_field_badge[name="state"][data-value="received"] {
+  background-color: #e0f2fe !important;
+  color: #0369a1 !important;
 }
 
-/* Cancelled */
-.badge-danger,
-.o_statusbar_status.bg-danger.o_learnx_admission_form .o_learnx_admission_state_tag[data-value='cancelled'] {
-  background-color: rgba(239, 68, 68, 0.16) !important;
+.o_field_badge[name="state"][data-value="reviewed"] {
+  background-color: #ede9fe !important;
+  color: #6d28d9 !important;
+}
+
+.o_field_badge[name="state"][data-value="accepted"] {
+  background-color: #dcfce7 !important;
+  color: #15803d !important;
+}
+
+.o_field_badge[name="state"][data-value="rejected"] {
+  background-color: #fee2e2 !important;
   color: #b91c1c !important;
 }
 
-/* ============================= */
-/* Form Banner */
-/* ============================= */
+.o_field_badge[name="state"][data-value="waitlisted"] {
+  background-color: #f3f4f6 !important;
+  color: #374151 !important;
+}
 
-.o_learnx_admission_form .o_learnx_admission_banner {
-  padding: 16px 20px;
-  margin-bottom: 16px;
-  border-radius: 12px;
+
+.o_group_string {
+
+  /* Target the title/string of the group */
+  .o_horizontal_separator,
+  &.o_inner_group>.o_horizontal_separator,
+  >.g-col-sm-12>h2 {
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: #242425db !important;
+    margin-bottom: 12px;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 4px;
+    white-space: nowrap !important;
+  }
+}
+
+.o_consent_wrapper {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+
+  label {
+    white-space: normal !important;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    flex: 1;
+
+    cursor: pointer;
+    line-height: 1.4;
+  }
+
+  input[type="checkbox"] {
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+}
+
+// Form View
+.o_form_header {
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, .175);
+  border: 0;
+  margin-bottom: 1.5rem;
+  border-radius: 0.5rem;
+}
+
+.o_form_sheet {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 40px;
   background: #ffffff;
-  color: #2b3144;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.o_form_view {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 40px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Header */
+.o_form_view .oe_title h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #0d6efd;
+}
+
+.o_form_view .oe_title h2 {
+  font-size: 1.6rem;
+  color: #2c3e50;
+  margin-top: 8px;
+}
+
+/* Cards */
+.o_form_view .card {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+.header_body {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: box-shadow 0.18s ease, transform 0.18s ease;
+  justify-content: space-between;
+  padding: 2rem;
+}
+.o_form_view .card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
 }
 
-.o_learnx_admission_form .o_learnx_admission_banner:hover {
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
-  transform: translateY(-1px);
-}
-
-.o_learnx_admission_form .o_learnx_admission_banner_text {
-  text-align: center;
-}
-
-.o_learnx_admission_form .o_learnx_admission_banner_title {
-  font-size: 18px;
+.o_form_view .card-header {
   font-weight: 600;
-  margin-bottom: 4px;
+  padding: 14px 20px;
+  font-size: 1.1rem;
 }
 
-.o_learnx_admission_form .o_learnx_admission_banner_state {
-  font-size: 13px;
-  color: #64748b;
+/* Field styling */
+.o_form_view .form-control,
+.o_form_view select.form-control {
+  border-radius: 8px;
+  padding: 12px 16px;
+  border: 1px solid #ced4da;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.o_learnx_admission_form .o_learnx_admission_state_tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px 10px;
-  border-radius: 999px;
-  font-size: 12px;
+.o_form_view .form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
+
+/* Labels */
+.o_form_view label {
   font-weight: 500;
-  text-transform: capitalize;
+  color: #34495e;
+  margin-bottom: 6px;
+}
+
+/* Required fields */
+.o_form_view .o_required_modifier>label::after {
+  content: " *";
+  color: #dc3545;
+  font-weight: bold;
+}
+
+/* Status bar */
+.o_statusbar_status .o_arrow_button {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+/* Image preview */
+.o_form_view .o_field_image {
+  border-radius: 10px;
+  border: 2px dashed #adb5bd;
+  padding: 10px;
+  transition: border-color 0.3s;
+}
+
+.o_form_view .o_field_image:hover {
+  border-color: #0d6efd;
+}
+
+/* Navigation buttons */
+.navigation-bar button {
+  min-width: 150px;
+  font-size: 1rem;
+  padding: 10px 20px;
+}
+
+.navigation-bar .btn-outline-secondary {
+  border-color: #6c757d;
+}
+
+.navigation-bar .btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.navigation-bar .btn-success {
+  background-color: #198754;
+  border-color: #198754;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .o_form_view .row g-3 {
+    flex-direction: column;
+  }
+
+  .navigation-bar {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+.o_form_label {
+  white-space: nowrap;
 }

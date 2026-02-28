@@ -1,111 +1,45 @@
 <odoo>
-    <!-- Programs -->
-    <record id="view_learnx_admission_program_tree" model="ir.ui.view">
-        <field name="name">learnx.admission.program.list</field>
-        <field name="model">learnx.admission.program</field>
-        <field name="arch" type="xml">
-            <list decoration-muted="capacity == 0">
-                <field name="name"/>
-                <field name="code"/>
-                <field name="capacity"/>
-                <field name="color" widget="color_picker"/>
-            </list>
-        </field>
-    </record>
-
-    <record id="view_learnx_admission_program_form" model="ir.ui.view">
-        <field name="name">learnx.admission.program.form</field>
-        <field name="model">learnx.admission.program</field>
-        <field name="arch" type="xml">
-            <form string="Program">
-                <sheet>
-                    <div class="oe_button_box" name="button_box">
-                    </div>
-                    <group>
-                        <group>
-                            <field name="name"/>
-                            <field name="code"/>
-                        </group>
-                        <group>
-                            <field name="capacity"/>
-                            <field name="color" widget="color_picker"/>
-                        </group>
-                    </group>
-                    <notebook>
-                        <page string="Description">
-                            <field name="description"/>
-                        </page>
-                    </notebook>
-                </sheet>
-            </form>
-        </field>
-    </record>
-
-    <record id="action_learnx_admission_programs" model="ir.actions.act_window">
-        <field name="name">Programs</field>
-        <field name="res_model">learnx.admission.program</field>
-        <field name="view_mode">list,form</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Create your first program
-            </p>
-        </field>
-    </record>
-
     <!-- Stages -->
     <!-- Applications: Kanban, List, Form, Search -->
     <record id="view_learnx_admission_application_kanban" model="ir.ui.view">
         <field name="name">learnx.admission.application.kanban</field>
         <field name="model">learnx.admission.application</field>
         <field name="arch" type="xml">
-            <kanban default_group_by="state" class="o_kanban_learnx_admission">
-                <field name="admission_title"/>
-                <field name="academic_year"/>
-                <field name="start_date"/>
-                <field name="end_date"/>
-                <field name="application_deadline"/>
-                <field name="available_program_ids"/>
-                <field name="max_intake_per_program"/>
-                <field name="application_fee"/>
-               <field name="state"
-                    widget="badge"
-                    decoration-info="state == 'draft'"
-                    decoration-primary="state == 'confirmed'"
-                    decoration-success="state == 'gathering'"
-                    decoration-warning="state == 'processing'"
-                    decoration-danger="state == 'cancelled'"/>
+            <kanban default_group_by="state" class="o_kanban_admission">
+                <field name="admission_number" />
+                <field name="application_date" />
+                <field name="preferred_start_semester" />
+                <field name="entry_year" />
+                <field name="application_type" />
+                <field name="state" widget="badge" class="o_field_badge" />
                 <templates>
                     <t t-name="card">
-                        <div class="oe_kanban_global_click o_kanban_card_learnx bg-100">
-                            <div class="o_kanban_learnx_header">
-                                <span class="o_kanban_learnx_applicant">
-                                    <t t-esc="record.admission_title.value"/>
+                        <div class="oe_kanban_global_click o_kanban_card bg-100">
+                            <div class="o_kanban_header">
+                                <span class="o_kanban_applicant">
+                                    <t t-esc="record.admission_number.value" />
                                 </span>
-                                <span t-if="record.academic_year.value" class="o_kanban_learnx_chip priority">
-                                    <t t-esc="record.academic_year.value"/>
+                                <span t-if="record.state.value"
+                                    class="badge o_field_badge"
+                                    t-att-data-value="record.state.raw_value">
+                                    <t t-esc="record.state.value" />
                                 </span>
                             </div>
                             <div class="o_kanban_learnx_body">
-                                <div class="o_kanban_learnx_program">
-                                    <i class="fa fa-calendar"/>
+                                <div class="o_kanban_program">
+                                    <i class="fa fa-calendar" />
                                     <span>
-                                        <t t-esc="record.start_date.value"/> –
-                                        <t t-esc="record.end_date.value"/>
+                                        <t t-esc="record.application_date.value" />
                                     </span>
                                 </div>
-                                <div class="o_kanban_learnx_meta">
-                                    <span t-if="record.application_deadline.value" class="badge badge-primary">
-                                        Deadline:
-                                        <t t-esc="record.application_deadline.value"/>
+                                <div class="o_kanban_meta">
+                                    <span t-if="record.preferred_start_semester.value"
+                                        class="o_kanban_chip priority">
+                                        <t t-esc="record.preferred_start_semester.value" />
                                     </span>
-                                    <span t-if="record.state.value"
-                                        t-attf-class="badge badge-pill
-                                            #{record.state.raw_value == 'draft' and 'bg-info'}
-                                            #{record.state.raw_value == 'confirmed' and 'bg-primary'}
-                                            #{record.state.raw_value == 'gathering' and 'bg-success'}
-                                            #{record.state.raw_value == 'processing' and 'bg-warning'}
-                                            #{record.state.raw_value == 'cancelled' and 'bg-danger'}">
-                                        <t t-esc="record.state.value"/>
+                                    <span t-if="record.application_type.value"
+                                        t-att-data-value="record.application_type.raw_value">
+                                        <t t-esc="record.application_type.value" />
                                     </span>
                                 </div>
                             </div>
@@ -121,18 +55,11 @@
         <field name="model">learnx.admission.application</field>
         <field name="arch" type="xml">
             <list>
-                <field name="admission_title"/>
-                <field name="academic_year"/>
-                <field name="start_date"/>
-                <field name="end_date"/>
-                <field name="application_deadline"/>
-                <field name="state"
-                    widget="badge"
-                    decoration-info="state == 'draft'"
-                    decoration-primary="state == 'confirmed'"
-                    decoration-success="state == 'gathering'"
-                    decoration-warning="state == 'processing'"
-                    decoration-danger="state == 'cancelled'"/>
+                <field name="admission_number" />
+                <field name="application_date" />
+                <field name="preferred_start_semester" />
+                <field name="entry_year" />
+                <field name="state" widget="badge" class="o_field_badge" />
             </list>
         </field>
     </record>
@@ -141,54 +68,259 @@
         <field name="name">learnx.admission.application.form</field>
         <field name="model">learnx.admission.application</field>
         <field name="arch" type="xml">
-            <form string="Admission" class="o_learnx_admission_form">
+            <form string="Admission" class="o_form_view">
                 <header>
-                    <button name="action_confirm" type="object" string="Confirm"
-                            class="btn-primary"/>
-                    <button name="action_cancel" type="object" string="Cancel"
-                            class="btn-secondary"/>
-                    <field name="state" widget="statusbar"/>
+                    <field name="state" widget="statusbar" clickable="0" nolabel="1" />
                 </header>
-                <sheet>
-                    <div class="o_learnx_admission_banner">
-                        <div class="o_learnx_admission_banner_text">
-                            <div class="o_learnx_admission_banner_title">
-                                <field name="display_header_title" nolabel="1"/>
+                <sheet class="o_form_sheet" readonly="state != 'draft'">
+                    <!-- Header -->
+                    <div class="card o_form_header">
+                        <div class="header_body ">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="mb-1 fw-bold">
+                                        <field name="display_header_title" nolabel="1" />
+                                    </h3>
+                                </div>
                             </div>
-                            <div class="o_learnx_admission_banner_state">
-                               <field name="state"
-                                    nolabel="1"
-                                    decoration-info="state == 'draft'"
-                                    decoration-primary="state == 'confirmed'"
-                                    decoration-success="state == 'gathering'"
-                                    decoration-warning="state == 'processing'"
-                                    decoration-danger="state == 'cancelled'"/>
+                            <div class="badge bg-white text-primary fs-5 px-4 py-2">
+                                <field name="state" widget="badge" />
                             </div>
                         </div>
                     </div>
-
                     <notebook>
-                        <page string="Admission Info">
-                            <group>
-                                <field name="admission_title"/>
-                                <field name="academic_year"/>
-                            </group>
+                        <page string="Admission Information" invisible="current_step != 1">
+                            <div class="card shadow border-0 rounded-3 mt-3">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">Admission Details</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3 d-flex align-items-center gap-3">
+                                                <label for="application_date"
+                                                    class="o_form_label fw-bold">Application Date</label>
+                                                <field name="application_date" readonly="1" />
+                                            </div>
+                                            <div class="mb-3 d-flex align-items-center gap-3">
+                                                <label for="application_type"
+                                                    class="o_form_label fw-bold">Application Type</label>
+                                                <field name="application_type" />
+                                            </div>
+                                            <div class="mb-3 d-flex align-items-center gap-3">
+                                                <label for="entry_year" class="o_form_label fw-bold">Entry
+                                                    Year</label>
+                                                <field name="entry_year" />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3 d-flex align-items-center gap-3">
+                                                <label for="preferred_start_semester"
+                                                    class="o_form_label fw-bold">Preferred Start
+                                                    Semester</label>
+                                                <field name="preferred_start_semester" />
+                                            </div>
+                                            <div class="mb-3 d-flex align-items-center gap-3">
+                                                <label for="is_previous_student"
+                                                    class="o_form_label fw-bold">Is Previous Student</label>
+                                                <field name="is_previous_student" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </page>
-                        <page string="Schedule">
-                            <group>
-                                <field name="start_date"/>
-                                <field name="end_date"/>
-                                <field name="application_deadline"/>
-                            </group>
+                        <page string="Eligibility &amp; Qualifications"
+                            invisible="current_step != 2">
+                            <div class="card shadow border-0 rounded-3 mt-3 overflow-visible">
+                                <div class="card-header bg-warning text-white">
+                                    <h5 class="mb-0"> Eligibility &amp; Qualifications</h5>
+                                </div>
+                                <div class="card-body overflow-visible">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="entry_qualification"
+                                                class="o_form_label fw-bold">Entry Qualification</label>
+                                            <field name="entry_qualification" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="subject_ids" class="o_form_label fw-bold">
+                                                Subjects</label>
+                                            <field name="subject_ids" widget="many2many_tags" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="english_proficiency"
+                                                class="o_form_label fw-bold">English Proficiency</label>
+                                            <field name="english_proficiency" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="gpa_score" class="o_form_label fw-bold">GPA
+                                                Score</label>
+                                            <field name="gpa_score" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </page>
-                        <page string="Capacity &amp; Fees">
-                            <group>
-                                <field name="available_program_ids" widget="many2many_tags"/>
-                                <field name="max_intake_per_program"/>
-                                <field name="application_fee"/>
-                            </group>
+                        <page string="Financial &amp; Sponsorship" invisible="current_step != 3">
+                            <div class="card shadow border-0 rounded-3 mt-3">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">Financial &amp; Sponsorship</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-12 d-flex align-items-center gap-3">
+                                            <label for="payment_method" class="o_form_label fw-bold">Payment
+                                                Method</label>
+                                            <field name="payment_method" />
+                                        </div>
+                                        <div class="col-md-12 d-flex align-items-center gap-3"
+                                            invisible="payment_method != 'sponsorship'"
+                                            required="payment_method == 'sponsorship'">
+                                            <label for="sponsor_name" class="o_form_label fw-bold">Sponsor
+                                                Name</label>
+                                            <field name="sponsor_name" />
+                                        </div>
+                                        <div class="col-md-12 d-flex align-items-center gap-3"
+                                            invisible="payment_method != 'sponsorship'"
+                                            required="payment_method == 'sponsorship'">
+                                            <label for="sponsor_contact"
+                                                class="o_form_label fw-bold">Sponsor Contact</label>
+                                            <field name="sponsor_contact"
+                                                placeholder="e.g. contact@company.com or +123456789" />
+                                        </div>
+                                        <div class="col-md-12 d-flex align-items-center gap-3"
+                                            invisible="payment_method != 'scholarship'"
+                                            required="payment_method == 'scholarship'">
+                                            <label for="scholarship_type"
+                                                class="o_form_label fw-bold">Scholarship Type</label>
+                                            <field name="scholarship_type"
+                                                />
+                                        </div>
+                                        <div class="col-md-12 d-flex align-items-center gap-3">
+                                            <label for="fee_paid" class="o_form_label fw-bold">Fee
+                                                Paid</label>
+                                            <field name="fee_paid" widget="boolean_toggle" />
+                                        </div>
+                                        <div class="col-md-12" invisible="1" >
+                                            <label for="receipt_filename"
+                                                class="o_form_label fw-bold">Receipt Filename</label>
+                                            <field name="receipt_filename"/>
+                                        </div>
+                                        <div class="col-md-12 d-flex align-items-center gap-3">
+                                            <label for="payment_receipt"
+                                                class="o_form_label fw-bold">Payment Receipt</label>
+                                            <field name="payment_receipt"
+                                                filename="receipt_filename"
+                                                invisible="not fee_paid"
+                                                required="fee_paid" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </page>
+                        <page string="Declaration &amp; Consent" invisible="current_step != 4">
+                            <div class="card shadow border-0 rounded-3 mt-3">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">Declaration &amp; Consent</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="has_disability"
+                                                class="o_form_label fw-bold">Do you have any
+                                                disabilities or special needs?</label>
+                                            <field name="has_disability" />
+                                        </div>
+                                        <div>
+                                            <field name="disability_details"
+                                                placeholder="Describe any accommodations needed (e.g., mobility aid, learning support)..."
+                                                nolabel="1"
+                                                colspan="2"
+                                                invisible="not has_disability"
+                                                required="has_disability" />
+                                        </div>
+                                        <div class="mt-4 o_consent_wrapper">
+                                            <field name="declaration_accepted" class="oe_inline" />
+                                            <label for="declaration_accepted"
+                                                string="I declare all information provided is true and complete."
+                                                class="fw-bold" />
+                                        </div>
+                                        <div class="mt-2 o_consent_wrapper">
+                                            <field name="privacy_consent" class="oe_inline" />
+                                            <label for="privacy_consent"
+                                                string="I consent to the processing of my personal data under the University Privacy Policy."
+                                                class="fw-bold" />
+                                        </div>
+                                        <group name="signature_section" string="Final Authorization"
+                                            class="mt-4 o_group_string">
+                                            <group>
+                                                <field name="signature"
+                                                    widget="signature"
+                                                    required="1"
+                                                    options="{'size': [300, 100]}" />
+                                                <field name="signed_on" readonly="1"
+                                                    invisible="not signature" />
+                                            </group>
+                                        </group>
+                                    </div>
+                                </div>
+                            </div>
+                        </page>
+                        <page string="Admin Only" invisible="current_step != 5">
+                            <div class="card shadow border-0 rounded-3 mt-3">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">Admin Only</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-6 d-flex align-items-center gap-3">
+                                            <label for="admin_application_status"
+                                                class="o_form_label fw-bold">Admin Application
+                                                Status</label>
+                                            <field name="admin_application_status"
+                                                options="{'no_create': True, 'no_open': True}" />
+                                        </div>
+                                        <div>
+                                            <label for="reviewer_notes" class="o_form_label fw-bold">Reviewer
+                                                Notes</label>
+                                            <field name="reviewer_notes"
+                                                placeholder="Add internal notes here..." />
+                                        </div>
+                                        <div class="col-md-6 d-flex align-items-center gap-3">
+                                            <label for="decision_date" class="o_form_label fw-bold">
+                                                Decision Date</label>
+                                            <field name="decision_date" />
+                                        </div>
+                                        <div class="col-md-6 d-flex align-items-center gap-3">
+                                            <label for="acceptance_letter_sent"
+                                                class="o_form_label fw-bold">Acceptance Letter
+                                                Sent</label>
+                                            <field name="acceptance_letter_sent"
+                                                widget="boolean_toggle" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </page>
                     </notebook>
+                    <!-- Navigation -->
+                    <div class="d-flex justify-content-between align-items-center mt-5 mb-4"
+                        invisible="state != 'draft'">
+                        <button type="object" name="action_prev_step"
+                            class="btn btn-outline-secondary btn-lg px-5">
+                            <i class="fa fa-arrow-left me-2"></i> Previous </button>
+
+                        <button type="object" name="action_next_step"
+                            class="btn btn-primary btn-lg px-5" invisible="current_step == 5"> Next <i
+                                class="fa fa-arrow-right ms-2"></i>
+                        </button>
+
+                        <button type="object" name="action_submit"
+                            class="btn btn-success btn-lg px-5" invisible="current_step != 5">
+                            <i class="fa fa-check-circle me-2"></i> Submit Admission </button>
+                    </div>
+
                 </sheet>
             </form>
         </field>
@@ -199,9 +331,9 @@
         <field name="model">learnx.admission.application</field>
         <field name="arch" type="xml">
             <search string="Search Admissions">
-                <field name="admission_title"/>
-                <field name="academic_year"/>
-                <field name="state"/>
+                <field name="admission_number" />
+                <field name="preferred_start_semester" />
+                <field name="state" />
             </search>
         </field>
     </record>
@@ -210,7 +342,7 @@
         <field name="name">Admissions</field>
         <field name="res_model">learnx.admission.application</field>
         <field name="view_mode">kanban,list,form</field>
-        <field name="search_view_id" ref="view_learnx_admission_application_search"/>
+        <field name="search_view_id" ref="view_learnx_admission_application_search" />
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Create your first application
