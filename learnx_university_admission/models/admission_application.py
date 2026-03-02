@@ -1,4 +1,5 @@
 from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError
 
 class LearnxAdmissionApplication(models.Model):
     _name = "learnx.admission.application"
@@ -8,18 +9,14 @@ class LearnxAdmissionApplication(models.Model):
 
     admission_number = fields.Char(
         string="Application Number",
-        required=True,
         copy=False,
         readonly=True,
         default="New",
-        tracking=True,
     )
     application_date = fields.Date(
             string="Application Date",
-            required=True,
             default=fields.Date.context_today,
             help="Date when the application is submitted.",
-            tracking=True,
     )
     preferred_start_semester = fields.Selection(
         [
@@ -28,16 +25,13 @@ class LearnxAdmissionApplication(models.Model):
             ('summer_intake', 'Summer Intake')
         ],
         string="Preferred Start Semester",
-        required=True,
         help="Select the preferred semester when the student wants to start.",
         tracking=True   
     )
     entry_year = fields.Integer(
         string="Entry Year",
-        required=True,
         default=lambda self: fields.Date.today().year,
         help="Year in which the student intends to start the program.",
-        tracking=True,
     )
     application_type = fields.Selection(
         [
@@ -47,7 +41,6 @@ class LearnxAdmissionApplication(models.Model):
             ('postgraduate', 'Postgraduate')
         ],
         string="Application Type",
-        required=True,
         help="Type of the application.",
         tracking=True
     )
@@ -55,7 +48,6 @@ class LearnxAdmissionApplication(models.Model):
         string="Previous WPU Student",
         default=False,
         help="Check if the applicant has previously studied at WPU.",
-        tracking=True,
     )
     entry_qualification = fields.Selection(
         [
@@ -65,13 +57,10 @@ class LearnxAdmissionApplication(models.Model):
             ('other', 'Other')
         ],
         string="Entry Qualification",
-        required=True,
         help="Select the applicant's highest qualification. Determines eligibility.",
-        tracking=True,
     )
     gpa_score = fields.Float(
         string="GPA / Aggregate Score",
-        required=True,
         help="Enter the GPA or aggregate score from Grade 12 or prior qualification for merit-based selection.",
         tracking=True
     )
@@ -82,7 +71,6 @@ class LearnxAdmissionApplication(models.Model):
             ('png_grade12', 'PNG Grade 12 English Grade')
         ],
         string="English Proficiency",
-        required=True,
         help="Required for non-English speakers. Select the type of English proficiency proof.",
         tracking=True
     )
@@ -104,7 +92,6 @@ class LearnxAdmissionApplication(models.Model):
     has_disability = fields.Boolean(
         string="Disability / Special Needs",
         default=False,
-        tracking=True,
         help="Check if the applicant requires specific accommodations."
     )
     disability_details = fields.Text(
@@ -120,9 +107,7 @@ class LearnxAdmissionApplication(models.Model):
             ('scholarship', 'Scholarship')
         ],
         string="Tuition Payment Method",
-        required=True,
         default='self_funded',
-        tracking=True,
         help="Select how the tuition fees will be covered."
     )
     sponsor_name = fields.Char(
@@ -138,8 +123,6 @@ class LearnxAdmissionApplication(models.Model):
     fee_paid = fields.Boolean(
         string="Application Fee Paid",
         default=False,
-        required=True,
-        tracking=True,
         help="Check this if the application fee has been confirmed as paid."
     )
     payment_receipt = fields.Binary(
@@ -150,14 +133,10 @@ class LearnxAdmissionApplication(models.Model):
     receipt_filename = fields.Char("Receipt Filename") # Optional: helps store the original name
     declaration_accepted = fields.Boolean(
         string="Applicant Declaration",
-        required=True,
-        tracking=True,
         help="I declare all information provided is true and complete."
     )
     privacy_consent = fields.Boolean(
         string="Privacy Consent",
-        required=True,
-        tracking=True,
         help="Applicant consent to data processing under the privacy policy."
     )
     signature = fields.Binary(
@@ -182,7 +161,6 @@ class LearnxAdmissionApplication(models.Model):
         ],
         string="Application Status",
         default='received',
-        tracking=True,
         help="Internal status managed by the admission office."
     )
     reviewer_notes = fields.Text(
@@ -213,11 +191,16 @@ class LearnxAdmissionApplication(models.Model):
             ("waitlisted", "Waitlisted"),
         ],
         default="draft",
-        tracking=True,
     )
     display_header_title = fields.Char(compute="_compute_display_fields")
     state_display = fields.Char(compute="_compute_display_fields")
-    current_step = fields.Integer(default=1)
+    current_step = fields.Selection([
+        ('admission', 'Admission Info'),
+        ('eligibility', 'Eligibility'),
+        ('financial', 'Financial'),
+        ('declaration', 'Declaration'),
+        ('admin', 'Admin Only')
+    ], default='admission')
 
     _sql_constraints = [
         (
@@ -240,15 +223,6 @@ class LearnxAdmissionApplication(models.Model):
                     "learnx.admission.application"
                 ) or "New"
         return super().create(vals_list)
-
-    def action_submit(self):
-        self.ensure_one()
-        self.state = 'submitted'
-        self.message_post(
-            body=_("Application submitted by %s") % self.env.user.name
-        )
-
-        return {'type': 'ir.actions.client', 'tag': 'reload'}
 
     def action_receive(self):
         self.write({"state": "received"})
@@ -278,15 +252,96 @@ class LearnxAdmissionApplication(models.Model):
             else:
                 rec.display_header_title = rec.admission_number or _("New Admission")
             rec.state_display = state_labels.get(rec.state, "")
+
     def action_next_step(self):
         self.ensure_one()
-        if self.current_step < 7:
-            self.current_step += 1
-        return {'type': 'ir.actions.client', 'tag': 'reload'}
+        steps = ['admission', 'eligibility', 'financial', 'declaration', 'admin']
+        current_index = steps.index(self.current_step)
+        if current_index < len(steps) - 1:
+            self.current_step = steps[current_index + 1]
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
 
     def action_prev_step(self):
         self.ensure_one()
-        if self.current_step > 1:
-            self.current_step -= 1
-        return {'type': 'ir.actions.client', 'tag': 'reload'}
+        steps = ['admission', 'eligibility', 'financial', 'declaration', 'admin']
+        current_index = steps.index(self.current_step)
+        if current_index > 0:
+            self.current_step = steps[current_index - 1]
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
+    
+    def _validate_required_fields(self):
+        self.ensure_one()
+        missing_fields = []
+        
+        # Step 1
+        if not self.application_date:
+            missing_fields.append("Application Date")
+        if not self.preferred_start_semester:
+            missing_fields.append("Preferred Start Semester")
+        if not self.entry_year:
+            missing_fields.append("Entry Year")
+        if not self.application_type:
+            missing_fields.append("Application Type")
 
+        # Step 2
+        if not self.entry_qualification:
+            missing_fields.append("Entry Qualification")
+        if not self.gpa_score:
+            missing_fields.append("GPA / Aggregate Score")
+        if not self.english_proficiency:
+            missing_fields.append("English Proficiency")
+
+        # Step 3
+        if not self.payment_method:
+            missing_fields.append("Tuition Payment Method")
+        if self.payment_method == "sponsorship":
+            if not self.sponsor_name:
+                missing_fields.append("Sponsor Name")
+            if not self.sponsor_contact:
+                missing_fields.append("Sponsor Contact")
+        if self.payment_method == "scholarship":
+            if not self.scholarship_type:
+                missing_fields.append("Scholarship Type")
+
+        if not self.fee_paid:
+            missing_fields.append("Application Fee Confirmation")
+
+        if self.fee_paid and not self.payment_receipt:
+            missing_fields.append("Payment Receipt")
+
+        # Step 4
+        if not self.declaration_accepted:
+            missing_fields.append("Applicant Declaration")
+        if not self.privacy_consent:
+            missing_fields.append("Privacy Consent")
+        if not self.signature:
+            missing_fields.append("Signature")
+
+        # If any missing → raise error
+        if missing_fields:
+            raise ValidationError(
+                "Please complete the following required fields before submission:\n\n- "
+                + "\n- ".join(missing_fields)
+            )
+
+    def action_submit(self):
+        self.ensure_one()
+        self._validate_required_fields()
+        self.state = 'submitted'
+        self.message_post(
+            body=_("Application submitted by %s") % self.env.user.name
+        )
+
+        return {'type': 'ir.actions.client', 'tag': 'reload'}

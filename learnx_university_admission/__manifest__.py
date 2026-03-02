@@ -28,7 +28,6 @@
     "assets": {
         "web.assets_backend": [
             "learnx_university_admission/static/src/scss/admission.scss",
-            "learnx_university_admission/static/src/js/admission_steps.js",
         ],
     },
 }
