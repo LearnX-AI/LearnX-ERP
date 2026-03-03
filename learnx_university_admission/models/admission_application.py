@@ -213,6 +213,9 @@ class LearnxAdmissionApplication(models.Model):
     def write(self, vals):
         if 'signature' in vals and vals['signature']:
             vals['signed_on'] = fields.Datetime.now()
+            
+        if 'admin_application_status' in vals:
+            vals['state'] = vals['admin_application_status']
         return super(LearnxAdmissionApplication, self).write(vals)
     
     @api.model_create_multi
@@ -225,22 +228,30 @@ class LearnxAdmissionApplication(models.Model):
         return super().create(vals_list)
 
     def action_receive(self):
-        self.write({"state": "received"})
+        self.write({"state": "received", "admin_application_status": "received"})
 
     def action_review(self):
-        self.write({"state": "reviewed"})
+        self.write({"state": "reviewed", "admin_application_status": "reviewed"})
 
     def action_accept(self):
-        self.write({"state": "accepted", "decision_date": fields.Date.today()})
+        self.write({
+            "state": "accepted",
+            "admin_application_status": "accepted",
+            "decision_date": fields.Date.today()
+        })
 
     def action_reject(self):
-        self.write({"state": "rejected", "decision_date": fields.Date.today()})
+        self.write({
+            "state": "rejected",
+            "admin_application_status": "rejected",
+            "decision_date": fields.Date.today()
+        })
 
     def action_waitlist(self):
-        self.write({"state": "waitlisted"})
+        self.write({"state": "waitlisted", "admin_application_status": "waitlisted"})
 
     def action_set_to_draft(self):
-        self.write({"state": "draft"})
+        self.write({"state": "draft", "admin_application_status": "received"})
 
     def _compute_display_fields(self):
         state_labels = dict(self._fields["state"].selection)
@@ -339,9 +350,18 @@ class LearnxAdmissionApplication(models.Model):
     def action_submit(self):
         self.ensure_one()
         self._validate_required_fields()
-        self.state = 'submitted'
+        self.write({
+        'state': 'submitted',
+        'admin_application_status': 'received',
+        })
         self.message_post(
             body=_("Application submitted by %s") % self.env.user.name
         )
 
+        return {'type': 'ir.actions.client', 'tag': 'reload'}
+    
+    def action_admin_update(self):
+        self.ensure_one()
+        self._validate_required_fields()
+        self.message_post(body=_("Application details updated by Admin."))
         return {'type': 'ir.actions.client', 'tag': 'reload'}

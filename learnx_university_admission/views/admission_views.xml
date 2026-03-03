@@ -269,7 +269,8 @@
                                 </div>
                             </div>
                         </page>
-                        <page string="Admin Only" invisible="current_step != 'admin'">
+                        <page string="Admin Only"
+                            invisible="current_step != 'admin' or state == 'draft'">
                             <div class="card shadow border-0 rounded-3 mt-3">
                                 <div class="card-header bg-primary text-white">
                                     <h5 class="mb-0">Admin Only</h5>
@@ -314,14 +315,20 @@
                             <i class="fa fa-arrow-left me-2"></i> Previous </button>
 
                         <button type="object" name="action_next_step"
-                            class="btn btn-primary btn-lg px-5" invisible="current_step == 'admin'">
+                            class="btn btn-primary btn-lg px-5"
+                            invisible="current_step == 'admin' or (current_step == 'declaration' and state == 'draft')">
                             Next <i
                                 class="fa fa-arrow-right ms-2"></i>
                         </button>
 
                         <button type="object" name="action_submit"
-                            class="btn btn-success btn-lg px-5" invisible="current_step != 'admin'">
+                            class="btn btn-success btn-lg px-5"
+                            invisible="current_step != 'declaration' or state != 'draft'">
                             <i class="fa fa-check-circle me-2"></i> Submit Admission </button>
+                        <button type="object" name="action_admin_update"
+                            class="btn btn-success btn-lg px-5"
+                            invisible="current_step != 'admin' or state == 'draft'">
+                            <i class="fa fa-check-circle me-2"></i> Update</button>
                     </div>
 
                 </sheet>
