@@ -52,61 +52,6 @@
   align-items: flex-start;
 }
 
-/* ========================================= */
-/* GLOBAL STATE BADGE COLORS (NOT STATUSBAR) */
-/* ========================================= */
-
-/* Only badge widget for state field */
-.o_field_badge[name="state"],
-.badge.o_field_badge[data-value] {
-  font-weight: 600 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.04em;
-  padding: 4px 12px !important;
-  border-radius: 999px !important;
-  border: none !important;
-}
-
-/* =============================== */
-/* UNIQUE COLORS FOR EACH STATE   */
-/* =============================== */
-
-.o_field_badge[name="state"][data-value="draft"] {
-  background-color: #dbeafe !important;
-  color: #1e40af !important;
-}
-
-.o_field_badge[name="state"][data-value="submitted"] {
-  background-color: #fef3c7 !important;
-  color: #b45309 !important;
-}
-
-.o_field_badge[name="state"][data-value="received"] {
-  background-color: #e0f2fe !important;
-  color: #0369a1 !important;
-}
-
-.o_field_badge[name="state"][data-value="reviewed"] {
-  background-color: #ede9fe !important;
-  color: #6d28d9 !important;
-}
-
-.o_field_badge[name="state"][data-value="accepted"] {
-  background-color: #dcfce7 !important;
-  color: #15803d !important;
-}
-
-.o_field_badge[name="state"][data-value="rejected"] {
-  background-color: #fee2e2 !important;
-  color: #b91c1c !important;
-}
-
-.o_field_badge[name="state"][data-value="waitlisted"] {
-  background-color: #f3f4f6 !important;
-  color: #374151 !important;
-}
-
-
 .o_group_string {
 
   /* Target the title/string of the group */
@@ -171,19 +116,6 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
-/* Header */
-.o_form_view .oe_title h1 {
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: #0d6efd;
-}
-
-.o_form_view .oe_title h2 {
-  font-size: 1.6rem;
-  color: #2c3e50;
-  margin-top: 8px;
-}
-
 /* Cards */
 .o_form_view .card {
   border: none;
@@ -191,11 +123,13 @@
   overflow: hidden;
   transition: transform 0.2s ease;
 }
+
 .header_body {
   display: flex;
   justify-content: space-between;
   padding: 2rem;
 }
+
 .o_form_view .card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
@@ -241,41 +175,9 @@
   font-weight: 500;
 }
 
-/* Image preview */
-.o_form_view .o_field_image {
-  border-radius: 10px;
-  border: 2px dashed #adb5bd;
-  padding: 10px;
-  transition: border-color 0.3s;
-}
-
-.o_form_view .o_field_image:hover {
-  border-color: #0d6efd;
-}
-
-/* Navigation buttons */
-.navigation-bar button {
-  min-width: 150px;
-  font-size: 1rem;
-  padding: 10px 20px;
-}
-
-.navigation-bar .btn-outline-secondary {
-  border-color: #6c757d;
-}
-
-.navigation-bar .btn-primary {
-  background-color: #0d6efd;
-  border-color: #0d6efd;
-}
-
-.navigation-bar .btn-success {
-  background-color: #198754;
-  border-color: #198754;
-}
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .o_form_view .row g-3 {
+  .o_form_view .row.g-3 {
     flex-direction: column;
   }
 
@@ -284,6 +186,62 @@
     gap: 10px;
   }
 }
+
 .o_form_label {
   white-space: nowrap;
+}
+
+/* ========================================= */
+/* STATE COLORS */
+/* ========================================= */
+
+/* Custom State Colors for Admissions */
+
+
+/* Submitted */
+.text-bg-warning,
+.badge.decoration-warning {
+  background-color: #ffc107 !important;
+  color: #000000 !important;
+}
+
+/* Received*/
+.text-bg-info,
+.badge.decoration-info {
+  background-color: #007bff !important;
+  color: #ffffff !important;
+}
+
+/* Reviewed*/
+.text-bg-secondary,
+.badge.decoration-secondary {
+  background-color: #a29bfe !important;
+  color: #ffffff !important;
+}
+
+/* Accepted */
+.text-bg-success,
+.badge.decoration-success {
+  background-color: #28a745 !important;
+  color: #ffffff !important;
+}
+
+/* Rejected*/
+.text-bg-danger,
+.badge.decoration-danger {
+  background-color: #dc3545 !important;
+  color: #ffffff !important;
+}
+/* Waitlisted */
+.text-bg-primary,
+.badge.decoration-primary {
+  background-color: #fd7e14 !important;
+  color: #ffffff !important;
+}
+
+/*Draft*/
+.text-bg-muted,
+.badge.decoration-muted {
+  background-color: #adb5bd !important;
+  color: #ffffff !important;
 }

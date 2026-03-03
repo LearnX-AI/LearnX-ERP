@@ -11,7 +11,6 @@
                 <field name="preferred_start_semester" />
                 <field name="entry_year" />
                 <field name="application_type" />
-                <field name="state" widget="badge" class="o_field_badge" />
                 <templates>
                     <t t-name="card">
                         <div class="oe_kanban_global_click o_kanban_card bg-100">
@@ -20,7 +19,6 @@
                                     <t t-esc="record.admission_number.value" />
                                 </span>
                                 <span t-if="record.state.value"
-                                    class="badge o_field_badge"
                                     t-att-data-value="record.state.raw_value">
                                     <t t-esc="record.state.value" />
                                 </span>
@@ -37,10 +35,14 @@
                                         class="o_kanban_chip priority">
                                         <t t-esc="record.preferred_start_semester.value" />
                                     </span>
-                                    <span t-if="record.application_type.value"
-                                        t-att-data-value="record.application_type.raw_value">
-                                        <t t-esc="record.application_type.value" />
-                                    </span>
+                                    <field name="state" widget="badge"
+                                        decoration-muted="state == 'draft'"
+                                        decoration-warning="state == 'submitted'"
+                                        decoration-info="state == 'received'"
+                                        decoration-secondary="state == 'reviewed'"
+                                        decoration-success="state == 'accepted'"
+                                        decoration-danger="state == 'rejected'"
+                                        decoration-primary="state == 'waitlisted'" />
                                 </div>
                             </div>
                         </div>
@@ -59,7 +61,7 @@
                 <field name="application_date" />
                 <field name="preferred_start_semester" />
                 <field name="entry_year" />
-                <field name="state" widget="badge" class="o_field_badge" />
+                <field name="state" widget="badge"/>
             </list>
         </field>
     </record>
@@ -85,7 +87,14 @@
                                 </div>
                             </div>
                             <div class="badge bg-white text-primary fs-5 px-4 py-2">
-                                <field name="state" widget="badge" />
+                                <field name="state" widget="badge"
+                                    decoration-muted="state == 'draft'"
+                                    decoration-warning="state == 'submitted'"
+                                    decoration-info="state == 'received'"
+                                    decoration-secondary="state == 'reviewed'"
+                                    decoration-success="state == 'accepted'"
+                                    decoration-danger="state == 'rejected'"
+                                    decoration-primary="state == 'waitlisted'" />
                             </div>
                         </div>
                     </div>
