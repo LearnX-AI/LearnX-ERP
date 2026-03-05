@@ -7,6 +7,7 @@ class LearnxAdmissionApplication(models.Model):
     _inherit = ["mail.thread", "mail.activity.mixin"]
     _order = "create_date desc"
 
+# Admision Details
     admission_number = fields.Char(
         string="Application Number",
         copy=False,
@@ -26,7 +27,7 @@ class LearnxAdmissionApplication(models.Model):
         ],
         string="Preferred Start Semester",
         help="Select the preferred semester when the student wants to start.",
-        tracking=True   
+        tracking=True,
     )
     entry_year = fields.Integer(
         string="Entry Year",
@@ -42,13 +43,14 @@ class LearnxAdmissionApplication(models.Model):
         ],
         string="Application Type",
         help="Type of the application.",
-        tracking=True
+        tracking=True,
     )
     is_previous_student = fields.Boolean(
         string="Previous WPU Student",
         default=False,
         help="Check if the applicant has previously studied at WPU.",
     )
+# Eligibility Details
     entry_qualification = fields.Selection(
         [
             ('grade_12', 'Grade 12'),
@@ -62,7 +64,7 @@ class LearnxAdmissionApplication(models.Model):
     gpa_score = fields.Float(
         string="GPA / Aggregate Score",
         help="Enter the GPA or aggregate score from Grade 12 or prior qualification for merit-based selection.",
-        tracking=True
+        tracking=True,
     )
     english_proficiency = fields.Selection(
         [
@@ -72,13 +74,15 @@ class LearnxAdmissionApplication(models.Model):
         ],
         string="English Proficiency",
         help="Required for non-English speakers. Select the type of English proficiency proof.",
-        tracking=True
+        tracking=True,
     )
     subject_ids = fields.Many2many(
         'learnx.subject',
         string="Prerequisite Subjects",
         help="Select subjects relevant for this admission application."
     )
+    
+    # Financial Details
     scholarship_type = fields.Selection(
         [
             ('government', 'Government'),
@@ -87,16 +91,6 @@ class LearnxAdmissionApplication(models.Model):
         ],
         string="Scholarship Type",
         help="Select the type of scholarship the student is applying for.",
-        tracking=True
-    )
-    has_disability = fields.Boolean(
-        string="Disability / Special Needs",
-        default=False,
-        help="Check if the applicant requires specific accommodations."
-    )
-    disability_details = fields.Text(
-        string="Accommodation Details",
-        help="Describe any accommodations needed (e.g., mobility aid, learning support).",
         tracking=True
     )
     payment_method = fields.Selection(
@@ -123,7 +117,7 @@ class LearnxAdmissionApplication(models.Model):
     fee_paid = fields.Boolean(
         string="Application Fee Paid",
         default=False,
-        help="Check this if the application fee has been confirmed as paid."
+        help="Check this if the application fee has been confirmed as paid.",
     )
     payment_receipt = fields.Binary(
         string="Payment Receipt",
@@ -131,13 +125,25 @@ class LearnxAdmissionApplication(models.Model):
         help="Upload the digital receipt or proof of payment.",
     )
     receipt_filename = fields.Char("Receipt Filename") # Optional: helps store the original name
+
+    # Declaration Details
+    has_disability = fields.Boolean(
+        string="Disability / Special Needs",
+        default=False,
+        help="Check if the applicant requires specific accommodations."
+    )
+    disability_details = fields.Text(
+        string="Accommodation Details",
+        help="Describe any accommodations needed (e.g., mobility aid, learning support).",
+        tracking=True
+    )
     declaration_accepted = fields.Boolean(
         string="Applicant Declaration",
-        help="I declare all information provided is true and complete."
+        help="I declare all information provided is true and complete.",
     )
     privacy_consent = fields.Boolean(
         string="Privacy Consent",
-        help="Applicant consent to data processing under the privacy policy."
+        help="Applicant consent to data processing under the privacy policy.",
     )
     signature = fields.Binary(
         string="Signature",
@@ -153,6 +159,7 @@ class LearnxAdmissionApplication(models.Model):
     # Admin Only Fields
     admin_application_status = fields.Selection(
         [
+            ('submitted', 'Submitted'),
             ('received', 'Received'),
             ('reviewed', 'Reviewed'),
             ('accepted', 'Accepted'),
@@ -160,7 +167,7 @@ class LearnxAdmissionApplication(models.Model):
             ('waitlisted', 'Waitlisted')
         ],
         string="Application Status",
-        default='received',
+        default='submitted',
         help="Internal status managed by the admission office."
     )
     reviewer_notes = fields.Text(
@@ -180,6 +187,7 @@ class LearnxAdmissionApplication(models.Model):
         tracking=True
     )
     #------------------------------------
+    is_admin_user = fields.Boolean(compute='_compute_is_admin_user')
     state = fields.Selection(
         [
             ("draft", "Draft"),
@@ -350,18 +358,14 @@ class LearnxAdmissionApplication(models.Model):
     def action_submit(self):
         self.ensure_one()
         self._validate_required_fields()
-        self.write({
-        'state': 'submitted',
-        'admin_application_status': 'received',
-        })
+        self.write({"state": self.admin_application_status})
         self.message_post(
             body=_("Application submitted by %s") % self.env.user.name
         )
 
         return {'type': 'ir.actions.client', 'tag': 'reload'}
-    
-    def action_admin_update(self):
-        self.ensure_one()
-        self._validate_required_fields()
-        self.message_post(body=_("Application details updated by Admin."))
-        return {'type': 'ir.actions.client', 'tag': 'reload'}
+
+    @api.depends_context('uid')
+    def _compute_is_admin_user(self):
+        for rec in self:
+            rec.is_admin_user = self.env.user.has_group('base.group_system')
