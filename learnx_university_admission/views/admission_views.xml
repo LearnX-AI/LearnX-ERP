@@ -326,7 +326,7 @@
 
                         <button type="object" name="action_next_step"
                             class="btn btn-primary btn-lg px-5"
-                            invisible="current_step == 'admin' or state != 'draft'"> Next <i
+                            invisible="current_step == 'admin'"> Next <i
                                 class="fa fa-arrow-right ms-2"></i>
                         </button>
 
