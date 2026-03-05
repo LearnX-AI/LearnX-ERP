@@ -271,34 +271,58 @@ class LearnxAdmissionApplication(models.Model):
             else:
                 rec.display_header_title = rec.admission_number or _("New Admission")
             rec.state_display = state_labels.get(rec.state, "")
-
-    def action_next_step(self):
+    
+    def _validate_current_step(self):
         self.ensure_one()
-        steps = ['admission', 'eligibility', 'financial', 'declaration', 'admin']
-        current_index = steps.index(self.current_step)
-        if current_index < len(steps) - 1:
-            self.current_step = steps[current_index + 1]
-        return {
-            'type': 'ir.actions.act_window',
-            'res_model': self._name,
-            'res_id': self.id,
-            'view_mode': 'form',
-            'target': 'current',
-        }
+        missing_fields = []
 
-    def action_prev_step(self):
-        self.ensure_one()
-        steps = ['admission', 'eligibility', 'financial', 'declaration', 'admin']
-        current_index = steps.index(self.current_step)
-        if current_index > 0:
-            self.current_step = steps[current_index - 1]
-        return {
-            'type': 'ir.actions.act_window',
-            'res_model': self._name,
-            'res_id': self.id,
-            'view_mode': 'form',
-            'target': 'current',
-        }
+        if self.current_step == 'admission':  # Admission Info
+            if not self.application_date:
+                missing_fields.append("Application Date.")
+            if not self.preferred_start_semester:
+                missing_fields.append("Preferred Start Semester.")
+            if not self.entry_year:
+                missing_fields.append("Entry Year.")
+            if not self.application_type:
+                missing_fields.append("Application Type.")
+
+        elif self.current_step == 'eligibility': 
+            if not self.entry_qualification:
+                missing_fields.append("Entry Qualification")
+            if not self.gpa_score:
+                missing_fields.append("GPA / Aggregate Score")
+            if not self.english_proficiency:
+                missing_fields.append("English Proficiency")
+
+        elif self.current_step == 'financial': 
+            if not self.payment_method:
+                missing_fields.append("Tuition Payment Method")
+            if not self.fee_paid:
+                missing_fields.append("Application Fee Confirmation")
+            if not self.payment_receipt:
+                missing_fields.append("Payment Receipt")    
+            if self.payment_method == "sponsorship":
+                if not self.sponsor_name:
+                    missing_fields.append("Sponsor Name")
+                if not self.sponsor_contact:
+                    missing_fields.append("Sponsor Contact")
+            if self.payment_method == "scholarship":
+                if not self.scholarship_type:
+                    missing_fields.append("Scholarship Type")
+
+        elif self.current_step == 'declaration': 
+            if not self.declaration_accepted:
+                missing_fields.append("Applicant Declaration")
+            if not self.privacy_consent:
+                missing_fields.append("Privacy Consent")
+            if not self.signature:
+                missing_fields.append("Signature")
+                
+        if missing_fields:
+            raise ValidationError(
+                "Please complete the following required fields before proceeding:\n\n- "
+                + "\n- ".join(missing_fields)
+            )
     
     def _validate_required_fields(self):
         self.ensure_one()
@@ -364,6 +388,35 @@ class LearnxAdmissionApplication(models.Model):
         )
 
         return {'type': 'ir.actions.client', 'tag': 'reload'}
+
+    def action_next_step(self):
+        self.ensure_one()
+        self._validate_current_step()
+        steps = ['admission', 'eligibility', 'financial', 'declaration', 'admin']
+        current_index = steps.index(self.current_step)
+        if current_index < len(steps) - 1:
+            self.current_step = steps[current_index + 1]
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
+
+    def action_prev_step(self):
+        self.ensure_one()
+        steps = ['admission', 'eligibility', 'financial', 'declaration', 'admin']
+        current_index = steps.index(self.current_step)
+        if current_index > 0:
+            self.current_step = steps[current_index - 1]
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
 
     @api.depends_context('uid')
     def _compute_is_admin_user(self):
